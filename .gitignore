@@ -1,4 +1,9 @@
 
+.npmignore
+android/build/
+android/react-native-webview-bridge.iml
+examples/SampleRN20/.npmignore
+
 *.xcuserdatad
 node_modules
 .DS_Store

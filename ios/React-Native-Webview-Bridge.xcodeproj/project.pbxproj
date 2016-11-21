@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		4114DC5C1C187CCB003CD988 /* RCTWebViewBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 4114DC591C187CCB003CD988 /* RCTWebViewBridge.m */; };
 		4114DC5D1C187CCB003CD988 /* RCTWebViewBridgeManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4114DC5B1C187CCB003CD988 /* RCTWebViewBridgeManager.m */; };
+		423B63741DE2E65E00366F1F /* RCTWKWebView.m in Sources */ = {isa = PBXBuildFile; fileRef = 423B63711DE2E65E00366F1F /* RCTWKWebView.m */; };
+		423B63751DE2E65E00366F1F /* RCTWKWebViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 423B63731DE2E65E00366F1F /* RCTWKWebViewManager.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -30,6 +32,10 @@
 		4114DC5A1C187CCB003CD988 /* RCTWebViewBridgeManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCTWebViewBridgeManager.h; sourceTree = SOURCE_ROOT; };
 		4114DC5B1C187CCB003CD988 /* RCTWebViewBridgeManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTWebViewBridgeManager.m; sourceTree = SOURCE_ROOT; };
 		4114DC5F1C187CE4003CD988 /* webviewbridge.js */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.javascript; path = webviewbridge.js; sourceTree = "<group>"; };
+		423B63701DE2E65E00366F1F /* RCTWKWebView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCTWKWebView.h; sourceTree = SOURCE_ROOT; };
+		423B63711DE2E65E00366F1F /* RCTWKWebView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTWKWebView.m; sourceTree = SOURCE_ROOT; };
+		423B63721DE2E65E00366F1F /* RCTWKWebViewManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCTWKWebViewManager.h; sourceTree = SOURCE_ROOT; };
+		423B63731DE2E65E00366F1F /* RCTWKWebViewManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTWKWebViewManager.m; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +69,10 @@
 		4114DC4E1C187C3A003CD988 /* React-Native-Webview-Bridge */ = {
 			isa = PBXGroup;
 			children = (
+				423B63701DE2E65E00366F1F /* RCTWKWebView.h */,
+				423B63711DE2E65E00366F1F /* RCTWKWebView.m */,
+				423B63721DE2E65E00366F1F /* RCTWKWebViewManager.h */,
+				423B63731DE2E65E00366F1F /* RCTWKWebViewManager.m */,
 				4114DC581C187CCB003CD988 /* RCTWebViewBridge.h */,
 				4114DC591C187CCB003CD988 /* RCTWebViewBridge.m */,
 				4114DC5A1C187CCB003CD988 /* RCTWebViewBridgeManager.h */,
@@ -138,6 +148,8 @@
 			files = (
 				4114DC5D1C187CCB003CD988 /* RCTWebViewBridgeManager.m in Sources */,
 				4114DC5C1C187CCB003CD988 /* RCTWebViewBridge.m in Sources */,
+				423B63741DE2E65E00366F1F /* RCTWKWebView.m in Sources */,
+				423B63751DE2E65E00366F1F /* RCTWKWebViewManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -180,7 +192,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -217,7 +229,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;

@@ -12,7 +12,7 @@
 #import "UIView+React.h"
 
 #define NSStringMultiline(...) [[NSString alloc] initWithCString:#__VA_ARGS__ encoding:NSUTF8StringEncoding]
-NSString *const RCTWebViewBridgeSchema = @"wvb";
+
 
 @interface RCTWKWebView () <WKNavigationDelegate, RCTAutoInsetsProtocol>
 
@@ -210,7 +210,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
 
   BOOL isJSNavigation = [scheme isEqualToString:RCTJSNavigationScheme];
 
-    if (!isJSNavigation && [request.URL.scheme isEqualToString:RCTWebViewBridgeSchema]) {
+    if (!isJSNavigation && [request.URL.scheme isEqualToString:@"wvb"]) {
         
         [webView evaluateJavaScript:@"WebViewBridge.__fetch__()" completionHandler:^(id message, NSError *error) {
             NSMutableDictionary<NSString *, id> *onBridgeMessageEvent = [[NSMutableDictionary alloc] initWithDictionary:@{
@@ -233,6 +233,7 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
             decisionHandler(WKNavigationActionPolicyCancel);
   
         }];
+        return;
     }
     
   // skip this for the JS Navigation handler

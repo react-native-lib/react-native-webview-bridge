@@ -90,7 +90,7 @@ var WKWebView = React.createClass({
       PropTypes.string,
       'Use the `source` prop instead.'
     ),
-
+      onBridgeMessage: PropTypes.func,
     /**
      * Loads static html or a uri (with optional headers) in the WebView.
      */
@@ -245,6 +245,16 @@ var WKWebView = React.createClass({
       source.uri = this.props.url;
     }
 
+      var onBridgeMessage = (event: Event) => {
+          const onBridgeMessageCallback = this.props.onBridgeMessage;
+          if (onBridgeMessageCallback) {
+              const messages = event.nativeEvent.messages;
+              messages.forEach((message) => {
+                  onBridgeMessageCallback(message);
+              });
+          }
+      };
+
     var webView =
       <RCTWKWebView
         ref={RCT_WEBVIEW_REF}
@@ -262,6 +272,7 @@ var WKWebView = React.createClass({
         onLoadingError={this._onLoadingError}
         onProgress={this._onProgress}
         onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
+        onBridgeMessage={onBridgeMessage}
       />;
 
     return (

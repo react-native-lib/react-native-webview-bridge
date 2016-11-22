@@ -14,7 +14,7 @@
 #define NSStringMultiline(...) [[NSString alloc] initWithCString:#__VA_ARGS__ encoding:NSUTF8StringEncoding]
 
 
-@interface RCTWKWebView () <WKNavigationDelegate, RCTAutoInsetsProtocol>
+@interface RCTWKWebView () <WKNavigationDelegate,WKUIDelegate, RCTAutoInsetsProtocol>
 
 @property (nonatomic, copy) RCTDirectEventBlock onLoadingStart;
 @property (nonatomic, copy) RCTDirectEventBlock onLoadingFinish;
@@ -39,6 +39,7 @@
     _contentInset = UIEdgeInsetsZero;
     _webView = [[WKWebView alloc] initWithFrame:self.bounds];
     _webView.navigationDelegate = self;
+      _webView.UIDelegate = self;
     [_webView addObserver:self forKeyPath:@"estimatedProgress" options:NSKeyValueObservingOptionNew context:nil];
     [self addSubview:_webView];
   }
@@ -204,6 +205,9 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
 
 - (void)webView:(__unused WKWebView *)webView decidePolicyForNavigationAction:(WKNavigationAction *)navigationAction decisionHandler:(void (^)(WKNavigationActionPolicy))decisionHandler
 {
+    
+        NSLog(@"请求前会先进入这个方法  webView:decidePolicyForNavigationActiondecisionHandler: %@   \n\n  ",navigationAction.request);
+    
   NSURLRequest *request = navigationAction.request;
   NSURL* url = request.URL;
   NSString* scheme = url.scheme;
@@ -279,6 +283,8 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
 
 - (void)webView:(__unused WKWebView *)webView didFailProvisionalNavigation:(__unused WKNavigation *)navigation withError:(NSError *)error
 {
+    NSLog(@"webView:didFailProvisionalNavigation:withError: 启动时加载数据发生错误就会调用这个方法。  \n\n");
+    
   if (_onLoadingError) {
     if ([error.domain isEqualToString:NSURLErrorDomain] && error.code == NSURLErrorCancelled) {
       // NSURLErrorCancelled is reported when a page has a redirect OR if you load
@@ -296,10 +302,14 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
     }];
     _onLoadingError(event);
   }
+    
+    
+    
 }
 
 - (void)webView:(WKWebView *)webView didFinishNavigation:(__unused WKNavigation *)navigation
 {
+    NSLog(@"webView:didFinishNavigation:  响应渲染完成后调用该方法   webView : %@  -- navigation : %@  \n\n",webView,navigation);
     
     //injecting WebViewBridge Script
     NSString *webViewBridgeScriptContent = [self webViewBridgeScript];
@@ -316,6 +326,8 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
             _onLoadingFinish([self baseEvent]);
         }
     }];
+    
+    
 }
 
 
@@ -411,6 +423,152 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
         doc.dispatchEvent(customEvent);
     }(window));
                              );
+}
+
+
+
+- (void)webViewWebContentProcessDidTerminate:(WKWebView *)webView{
+    NSLog(@"webViewWebContentProcessDidTerminate:  当Web视图的网页内容被终止时调用。");
+}
+
+
+
+- (void)webView:(WKWebView *)webView didStartProvisionalNavigation:(null_unspecified WKNavigation *)navigation
+{
+//    [UIApplication sharedApplication].networkActivityIndicatorVisible = YES;
+    NSLog(@"webView:didStartProvisionalNavigation:  开始请求  \n\n");
+}
+
+- (void)webView:(WKWebView *)webView didCommitNavigation:(WKNavigation *)navigation {
+    NSLog(@"webView:didCommitNavigation:   响应的内容到达主页面的时候响应,刚准备开始渲染页面应用 \n\n");
+}
+
+
+
+
+- (void)webView:(WKWebView *)webView didFailNavigation:(WKNavigation *)navigation withError:(NSError *)error{
+    NSLog(@"webView:didFailNavigation: 当一个正在提交的页面在跳转过程中出现错误时调用这个方法。  \n\n");
+}
+
+
+
+- (void)webView:(WKWebView *)webView decidePolicyForNavigationResponse:(WKNavigationResponse *)navigationResponse decisionHandler:(void (^)(WKNavigationResponsePolicy))decisionHandler{
+    
+    NSLog(@"返回响应前先会调用这个方法  并且已经能接收到响应webView:decidePolicyForNavigationResponse:decisionHandler: Response?%@  \n\n",navigationResponse.response);
+    
+    decisionHandler(WKNavigationResponsePolicyAllow);
+}
+
+
+
+- (void)webView:(WKWebView *)webView didReceiveServerRedirectForProvisionalNavigation:(WKNavigation *)navigation{
+    
+    NSLog(@"webView:didReceiveServerRedirectForProvisionalNavigation: 重定向的时候就会调用  \n\n");
+}
+
+
+
+
+
+/*! @abstract Notifies your app that the DOM window object's close() method completed successfully.
+ @param webView The web view invoking the delegate method.
+ @discussion Your app should remove the web view from the view hierarchy and update
+ the UI as needed, such as by closing the containing browser tab or window.
+ */
+- (void)webViewDidClose:(WKWebView *)webView API_AVAILABLE(macosx(10.11), ios(9.0)){
+    NSLog(@"webView:webViewDidClose: 关闭界面  \n\n");
+    
+}
+
+/*! @abstract Displays a JavaScript alert panel.
+ @param webView The web view invoking the delegate method.
+ @param message The message to display.
+ @param frame Information about the frame whose JavaScript initiated this
+ call.
+ @param completionHandler The completion handler to call after the alert
+ panel has been dismissed.
+ @discussion For user security, your app should call attention to the fact
+ that a specific website controls the content in this panel. A simple forumla
+ for identifying the controlling website is frame.request.URL.host.
+ The panel should have a single OK button.
+ 
+ If you do not implement this method, the web view will behave as if the user selected the OK button.
+ */
+- (void)webView:(WKWebView *)webView runJavaScriptAlertPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(void))completionHandler{
+    NSLog(@"webView:runJavaScriptAlertPanelWithMessage: alert  \n\n");
+    
+    UIAlertController* alert = [UIAlertController alertControllerWithTitle:
+                                NSLocalizedString(@"万物社", nil) message: message
+                                                            preferredStyle: UIAlertControllerStyleAlert];
+    UIAlertAction* defaultAction = [UIAlertAction actionWithTitle: @"确定"
+                                                            style:UIAlertActionStyleDefault handler:^(UIAlertAction * action) {
+                                                                completionHandler();
+                                                            }]; 
+    [alert addAction:defaultAction];
+    
+    [[self reactViewController] presentViewController:alert animated:YES completion:nil];
+}
+
+/*! @abstract Displays a JavaScript confirm panel.
+ @param webView The web view invoking the delegate method.
+ @param message The message to display.
+ @param frame Information about the frame whose JavaScript initiated this call.
+ @param completionHandler The completion handler to call after the confirm
+ panel has been dismissed. Pass YES if the user chose OK, NO if the user
+ chose Cancel.
+ @discussion For user security, your app should call attention to the fact
+ that a specific website controls the content in this panel. A simple forumla
+ for identifying the controlling website is frame.request.URL.host.
+ The panel should have two buttons, such as OK and Cancel.
+ 
+ If you do not implement this method, the web view will behave as if the user selected the Cancel button.
+ */
+- (void)webView:(WKWebView *)webView runJavaScriptConfirmPanelWithMessage:(NSString *)message initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(BOOL result))completionHandler{
+    NSLog(@"webView:runJavaScriptConfirmPanelWithMessage: confirm  \n\n");
+    
+    UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"万物社" message: message
+                                                            preferredStyle: UIAlertControllerStyleAlert];
+    
+    UIAlertAction *cancelAction = [UIAlertAction
+                                   actionWithTitle:@"取消"
+                                   style:UIAlertActionStyleCancel
+                                   handler:^(UIAlertAction *action)
+                                   {
+                                       completionHandler(NO);
+                                   }];
+    
+    UIAlertAction *okAction = [UIAlertAction
+                               actionWithTitle:@"确定"
+                               style:UIAlertActionStyleDefault
+                               handler:^(UIAlertAction *action)
+                               {
+                                   completionHandler(YES);
+                               }];
+    
+    [alert addAction:cancelAction];
+    [alert addAction:okAction];
+    [[self reactViewController] presentViewController:alert animated:YES completion:nil];
+    
+}
+
+/*! @abstract Displays a JavaScript text input panel.
+ @param webView The web view invoking the delegate method.
+ @param message The message to display.
+ @param defaultText The initial text to display in the text entry field.
+ @param frame Information about the frame whose JavaScript initiated this call.
+ @param completionHandler The completion handler to call after the text
+ input panel has been dismissed. Pass the entered text if the user chose
+ OK, otherwise nil.
+ @discussion For user security, your app should call attention to the fact
+ that a specific website controls the content in this panel. A simple forumla
+ for identifying the controlling website is frame.request.URL.host.
+ The panel should have two buttons, such as OK and Cancel, and a field in
+ which to enter text.
+ 
+ If you do not implement this method, the web view will behave as if the user selected the Cancel button.
+ */
+- (void)webView:(WKWebView *)webView runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt defaultText:(nullable NSString *)defaultText initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSString * _Nullable result))completionHandler{
+      NSLog(@"webView:runJavaScriptTextInputPanelWithPrompt: textInput  \n\n");
 }
 
 

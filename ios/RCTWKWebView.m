@@ -14,7 +14,7 @@
 #define NSStringMultiline(...) [[NSString alloc] initWithCString:#__VA_ARGS__ encoding:NSUTF8StringEncoding]
 
 
-@interface RCTWKWebView () <WKNavigationDelegate,WKUIDelegate, RCTAutoInsetsProtocol>
+@interface RCTWKWebView () <WKNavigationDelegate,WKUIDelegate,WKScriptMessageHandler, RCTAutoInsetsProtocol>
 
 @property (nonatomic, copy) RCTDirectEventBlock onLoadingStart;
 @property (nonatomic, copy) RCTDirectEventBlock onLoadingFinish;
@@ -311,6 +311,39 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
 {
     NSLog(@"webView:didFinishNavigation:  响应渲染完成后调用该方法   webView : %@  -- navigation : %@  \n\n",webView,navigation);
     
+//    //取出cookie
+//    NSHTTPCookieStorage *cookieStorage = [NSHTTPCookieStorage sharedHTTPCookieStorage];
+//    //js函数
+//    NSString *JSFuncString =
+//    @"function setCookie(name,value,expires)\
+//    {\
+//    var oDate=new Date();\
+//    oDate.setDate(oDate.getDate()+expires);\
+//    document.cookie=name+'='+value+';expires='+oDate;\
+//    }\
+//    function getCookie(name)\
+//    {\
+//    var arr = document.cookie.match(new RegExp('(^| )'+name+'=([^;]*)(;|$)'));\
+//    if(arr != null) return unescape(arr[2]); return null;\
+//    }\
+//    function delCookie(name)\
+//    {\
+//    var exp = new Date();\
+//    exp.setTime(exp.getTime() - 1);\
+//    var cval=getCookie(name);\
+//    if(cval!=null) document.cookie= name + '='+cval+';expires='+exp.toGMTString();\
+//    }";
+//    
+//    //拼凑js字符串
+//    NSMutableString *JSCookieString = JSFuncString.mutableCopy;
+//    for (NSHTTPCookie *cookie in cookieStorage.cookies) {
+//        NSString *excuteJSString = [NSString stringWithFormat:@"setCookie('%@', '%@', 1);", cookie.name, cookie.value];
+//        [JSCookieString appendString:excuteJSString];
+//    }
+//    //执行js
+//    [webView evaluateJavaScript:JSCookieString completionHandler:nil];
+    
+    
     //injecting WebViewBridge Script
     NSString *webViewBridgeScriptContent = [self webViewBridgeScript];
     [webView evaluateJavaScript:webViewBridgeScriptContent completionHandler:^(id result, NSError *error) {
@@ -569,6 +602,16 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
  */
 - (void)webView:(WKWebView *)webView runJavaScriptTextInputPanelWithPrompt:(NSString *)prompt defaultText:(nullable NSString *)defaultText initiatedByFrame:(WKFrameInfo *)frame completionHandler:(void (^)(NSString * _Nullable result))completionHandler{
       NSLog(@"webView:runJavaScriptTextInputPanelWithPrompt: textInput  \n\n");
+}
+
+
+/*! @abstract Invoked when a script message is received from a webpage.
+ @param userContentController The user content controller invoking the
+ delegate method.
+ @param message The script message received.
+ */
+- (void)userContentController:(WKUserContentController *)userContentController didReceiveScriptMessage:(WKScriptMessage *)message{
+      NSLog(@"webView:userContentController: didReceiveScriptMessage  \n\n");
 }
 
 

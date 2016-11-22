@@ -220,6 +220,26 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
 - (BOOL)webView:(__unused UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request
  navigationType:(UIWebViewNavigationType)navigationType
 {
+    NSURL* url = request.URL;
+    
+    // look for our custom action to come through:
+    if ( [url.host isEqualToString: @"action"] && [url.path isEqualToString: @"/alert"] )
+    {
+        // parse out the message
+        NSString* message = [[[[url query] componentsSeparatedByString: @"="] lastObject] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
+        
+        // show our alert
+        UIAlertView* av = [[UIAlertView alloc] initWithTitle: @"万物社"
+                                                     message: message
+                                                    delegate: nil
+                                           cancelButtonTitle: @"OK"
+                                           otherButtonTitles: nil];
+        
+        [av show];
+        
+        return NO;
+    }
+    
   BOOL isJSNavigation = [request.URL.scheme isEqualToString:RCTJSNavigationScheme];
 
   if (!isJSNavigation && [request.URL.scheme isEqualToString:RCTWebViewBridgeSchema]) {
@@ -327,7 +347,12 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
   return NSStringMultiline(
     (function (window) {
       'use strict';
-
+      
+      
+      
+      //window.alert = function(message) { window.location = 'http://action/alert?message=' + message; };
+      
+      
       //Make sure that if WebViewBridge already in scope we don't override it.
       if (window.WebViewBridge) {
         return;
@@ -339,6 +364,8 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
       var doc = window.document;
       var customEvent = doc.createEvent('Event');
 
+      
+      
       function callFunc(func, message) {
         if ('function' === typeof func) {
           func(message);
@@ -396,6 +423,9 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
       //dispatch event
       customEvent.initEvent('WebViewBridge', true, true);
       doc.dispatchEvent(customEvent);
+      
+      window.alert = function(message) { WebViewBridge.send('alert::' + message); };
+      
     }(window));
   );
 }

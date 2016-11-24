@@ -13,6 +13,7 @@
 #import "RCTWebViewBridge.h"
 
 #import <UIKit/UIKit.h>
+#import "UIWebView+JavaScriptAlert.h"
 
 #import "RCTAutoInsetsProtocol.h"
 #import "RCTConvert.h"
@@ -424,7 +425,25 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
       customEvent.initEvent('WebViewBridge', true, true);
       doc.dispatchEvent(customEvent);
       
-      window.alert = function(message) { WebViewBridge.send('alert::' + message); };
+      //window.alert = function(message) { WebViewBridge.send('alert::' + message); };
+      
+      window._top = {};
+      if(_top){
+          _top.Dialog = function (params) {
+              var autoHide = params.autoHide;
+              var model = params.model;
+              var message = params.msg;
+              var buttons = params.buttons;
+              if(model){
+                  if(confirm(message)){
+                      var key = Object.keys(buttons);
+                      buttons[key[0]].call();
+                  }
+              }else{
+                  WebViewBridge.send('alert::' + message);
+              }
+          }
+      }
       
     }(window));
   );

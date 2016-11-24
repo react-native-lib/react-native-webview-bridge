@@ -11,6 +11,7 @@
 		4114DC5D1C187CCB003CD988 /* RCTWebViewBridgeManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4114DC5B1C187CCB003CD988 /* RCTWebViewBridgeManager.m */; };
 		423B63741DE2E65E00366F1F /* RCTWKWebView.m in Sources */ = {isa = PBXBuildFile; fileRef = 423B63711DE2E65E00366F1F /* RCTWKWebView.m */; };
 		423B63751DE2E65E00366F1F /* RCTWKWebViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 423B63731DE2E65E00366F1F /* RCTWKWebViewManager.m */; };
+		4298792A1DE7006C005821B5 /* UIWebView+JavaScriptAlert.m in Sources */ = {isa = PBXBuildFile; fileRef = 429879291DE7006C005821B5 /* UIWebView+JavaScriptAlert.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -36,6 +37,8 @@
 		423B63711DE2E65E00366F1F /* RCTWKWebView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTWKWebView.m; sourceTree = SOURCE_ROOT; };
 		423B63721DE2E65E00366F1F /* RCTWKWebViewManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RCTWKWebViewManager.h; sourceTree = SOURCE_ROOT; };
 		423B63731DE2E65E00366F1F /* RCTWKWebViewManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RCTWKWebViewManager.m; sourceTree = SOURCE_ROOT; };
+		429879281DE7002D005821B5 /* UIWebView+JavaScriptAlert.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIWebView+JavaScriptAlert.h"; sourceTree = SOURCE_ROOT; };
+		429879291DE7006C005821B5 /* UIWebView+JavaScriptAlert.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIWebView+JavaScriptAlert.m"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +80,8 @@
 				4114DC591C187CCB003CD988 /* RCTWebViewBridge.m */,
 				4114DC5A1C187CCB003CD988 /* RCTWebViewBridgeManager.h */,
 				4114DC5B1C187CCB003CD988 /* RCTWebViewBridgeManager.m */,
+				429879281DE7002D005821B5 /* UIWebView+JavaScriptAlert.h */,
+				429879291DE7006C005821B5 /* UIWebView+JavaScriptAlert.m */,
 			);
 			path = "React-Native-Webview-Bridge";
 			sourceTree = "<group>";
@@ -146,6 +151,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4298792A1DE7006C005821B5 /* UIWebView+JavaScriptAlert.m in Sources */,
 				4114DC5D1C187CCB003CD988 /* RCTWebViewBridgeManager.m in Sources */,
 				4114DC5C1C187CCB003CD988 /* RCTWebViewBridge.m in Sources */,
 				423B63741DE2E65E00366F1F /* RCTWKWebView.m in Sources */,

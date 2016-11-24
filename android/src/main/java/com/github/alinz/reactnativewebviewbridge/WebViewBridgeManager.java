@@ -9,10 +9,14 @@
 
 package com.github.alinz.reactnativewebviewbridge;
 
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Picture;
 import android.os.Build;
+import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.GeolocationPermissions;
 import android.webkit.JavascriptInterface;
@@ -272,6 +276,41 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
         }
 
         public void callInjectedJavaScript() {
+            String defaultJs = "\n" +
+                    "window._top = {};\n" +
+                    "if(_top){\n" +
+                    "    _top.Dialog = function (params) {\n" +
+                    "        var autoHide = params.autoHide;\n" +
+                    "        var model = params.model;\n" +
+                    "        var message = params.msg;\n" +
+                    "        var buttons = params.buttons;\n" +
+                    "        var keys = Object.keys(buttons);\n" +
+                    "        if(model){\n" +
+                    "            if(!confirm(message)){\n" +
+                    "                buttons[keys[0]].call();\n" +
+                    "            }else{\n" +
+                    "                if(keys.length > 1){\n" +
+                    "                    buttons[keys[1]].call();\n" +
+                    "                }else{\n" +
+                    "                    buttons[keys[0]].call();\n" +
+                    "                }\n" +
+                    "            }\n" +
+                    "        }else{\n" +
+                    "            WebViewBridge.send('alert::' + message);\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n" +
+                    "\n" +
+                    "var alertBack = window.alert;\n" +
+                    "window.alert = function (message, isCheck) {\n" +
+                    "    if(!!isCheck){\n" +
+                    "        alertBack(message);\n" +
+                    "    }else{\n" +
+                    "        WebViewBridge.send('alert::' + message);\n" +
+                    "    }\n" +
+                    "}";
+            loadUrl("javascript:(function() {\n" + defaultJs + ";\n})();");
+
             if (getSettings().getJavaScriptEnabled() &&
                     injectedJS != null &&
                     !TextUtils.isEmpty(injectedJS)) {
@@ -343,10 +382,77 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
 
             @Override
             public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
-                dispatchEvent(view, new TopMessageEvent(view.getId(), "alert::" + message));
-                result.confirm();
+                final AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+                builder.setTitle("确认")
+                        .setMessage(message)
+                        .setPositiveButton("确定", null);
+                // 不需要绑定按键事件
+                // 屏蔽keycode等于84之类的按键
+                builder.setOnKeyListener(new DialogInterface.OnKeyListener() {
+                    public boolean onKey(DialogInterface dialog, int keyCode,KeyEvent event) {
+                        Log.v("onJsAlert", "keyCode==" + keyCode + "event="+ event);
+                        return true;
+                    }
+                });
+                // 禁止响应按back键的事件
+                builder.setCancelable(false);
+                AlertDialog dialog = builder.create();
+                dialog.show();
+                result.confirm();// 因为没有绑定事件，需要强行confirm,否则页面会变黑显示不了内容。
                 return true;
             }
+
+            /**
+             * Tell the client to display a confirm dialog to the user. If the client
+             * returns true, WebView will assume that the client will handle the
+             * confirm dialog and call the appropriate JsResult method. If the
+             * client returns false, a default value of false will be returned to
+             * javascript. The default behavior is to return false.
+             * @param view The WebView that initiated the callback.
+             * @param url The url of the page requesting the dialog.
+             * @param message Message to be displayed in the window.
+             * @param result A JsResult used to send the user's response to
+             *               javascript.
+             * @return boolean Whether the client will handle the confirm dialog.
+             */
+            public boolean onJsConfirm(WebView view, String url, String message,
+                                       final JsResult result) {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+                builder.setTitle("确认")
+                        .setMessage(message)
+                        .setPositiveButton("确定",new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog,int which) {
+                                result.confirm();
+                            }
+                        })
+                        .setNeutralButton("取消", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                result.cancel();
+                            }
+                        });
+                builder.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialog) {
+                        result.cancel();
+                    }
+                });
+
+                // 屏蔽keycode等于84之类的按键，避免按键后导致对话框消息而页面无法再弹出对话框的问题
+                builder.setOnKeyListener(new DialogInterface.OnKeyListener() {
+                    @Override
+                    public boolean onKey(DialogInterface dialog, int keyCode,KeyEvent event) {
+                        Log.v("onJsConfirm", "keyCode==" + keyCode + "event="+ event);
+                        return true;
+                    }
+                });
+                // 禁止响应按back键的事件
+                // builder.setCancelable(false);
+                AlertDialog dialog = builder.create();
+                dialog.show();
+                return true;
+            }
+
+
         });
         reactContext.addLifecycleEventListener(webView);
         mWebViewConfig.configWebView(webView);

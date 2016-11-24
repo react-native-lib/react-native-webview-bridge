@@ -223,24 +223,6 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
 {
     NSURL* url = request.URL;
     
-    // look for our custom action to come through:
-    if ( [url.host isEqualToString: @"action"] && [url.path isEqualToString: @"/alert"] )
-    {
-        // parse out the message
-        NSString* message = [[[[url query] componentsSeparatedByString: @"="] lastObject] stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
-        
-        // show our alert
-        UIAlertView* av = [[UIAlertView alloc] initWithTitle: @"万物社"
-                                                     message: message
-                                                    delegate: nil
-                                           cancelButtonTitle: @"OK"
-                                           otherButtonTitles: nil];
-        
-        [av show];
-        
-        return NO;
-    }
-    
   BOOL isJSNavigation = [request.URL.scheme isEqualToString:RCTJSNavigationScheme];
 
   if (!isJSNavigation && [request.URL.scheme isEqualToString:RCTWebViewBridgeSchema]) {
@@ -434,14 +416,29 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
               var model = params.model;
               var message = params.msg;
               var buttons = params.buttons;
+              var keys = Object.keys(buttons);
               if(model){
-                  if(confirm(message)){
-                      var key = Object.keys(buttons);
-                      buttons[key[0]].call();
+                  if(!confirm(message)){
+                      buttons[keys[0]].call();
+                  }else{
+                      if(keys.length > 1){
+                          buttons[keys[1]].call();
+                      }else{
+                          buttons[keys[0]].call();
+                      }
                   }
               }else{
                   WebViewBridge.send('alert::' + message);
               }
+          }
+      }
+      
+      var alertBack = window.alert;
+      window.alert = function (message, isCheck) {
+          if(!!isCheck){
+              alertBack(message);
+          }else{
+              WebViewBridge.send('alert::' + message);
           }
       }
       

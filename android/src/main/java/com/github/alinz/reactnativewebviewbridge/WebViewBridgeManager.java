@@ -344,6 +344,7 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
             @Override
             public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
                 dispatchEvent(view, new TopMessageEvent(view.getId(), "alert::" + message));
+                result.confirm();
                 return true;
             }
         });

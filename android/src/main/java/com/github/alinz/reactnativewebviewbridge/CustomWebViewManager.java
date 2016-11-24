@@ -9,8 +9,10 @@
 
 package com.github.alinz.reactnativewebviewbridge;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Picture;
+import android.net.Uri;
 import android.os.Build;
 import android.text.TextUtils;
 import android.view.ViewGroup.LayoutParams;
@@ -76,14 +78,14 @@ import javax.annotation.Nullable;
  *  - canGoBack - boolean, whether there is anything on a history stack to go back
  *  - canGoForward - boolean, whether it is possible to request GO_FORWARD command
  */
-@ReactModule(name = WebViewBridgeManager.REACT_CLASS)
-public class WebViewBridgeManager extends SimpleViewManager<WebView> {
+@ReactModule(name = CustomWebViewManager.REACT_CLASS)
+public class CustomWebViewManager extends SimpleViewManager<WebView> {
 
-    protected static final String REACT_CLASS = "RCTWebViewBridge";
+    protected static final String REACT_CLASS = "CustomerWebView";
 
     private static final String HTML_ENCODING = "UTF-8";
     private static final String HTML_MIME_TYPE = "text/html; charset=utf-8";
-    private static final String BRIDGE_NAME = "WebViewBridge";
+    private static final String BRIDGE_NAME = "__REACT_WEB_VIEW_BRIDGE";
 
     private static final String HTTP_METHOD_POST = "POST";
 
@@ -134,9 +136,9 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
                     url.startsWith("file://")) {
                 return false;
             } else {
-//                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-//                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                view.getContext().startActivity(intent);
+                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                view.getContext().startActivity(intent);
                 return true;
             }
         }
@@ -212,11 +214,6 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
             }
 
             @JavascriptInterface
-            public void send(String message) {
-                mContext.onMessage(message);
-            }
-
-            @JavascriptInterface
             public void postMessage(String message) {
                 mContext.onMessage(message);
             }
@@ -270,10 +267,7 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
             if (getSettings().getJavaScriptEnabled() &&
                     injectedJS != null &&
                     !TextUtils.isEmpty(injectedJS)) {
-
-                String js = injectedJS.replace("\r", "");
-                js = injectedJS.replace("\n", "");
-                loadUrl("javascript:(function() {\n" + js + ";\n})();");
+                loadUrl("javascript:(function() {\n" + injectedJS + ";\n})();");
             }
         }
 
@@ -311,14 +305,14 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
         }
     }
 
-    public WebViewBridgeManager() {
+    public CustomWebViewManager() {
         mWebViewConfig = new WebViewConfig() {
             public void configWebView(WebView webView) {
             }
         };
     }
 
-    public WebViewBridgeManager(WebViewConfig webViewConfig) {
+    public CustomWebViewManager(WebViewConfig webViewConfig) {
         mWebViewConfig = webViewConfig;
     }
 
@@ -488,10 +482,12 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
                 root.stopLoading();
                 break;
             case COMMAND_POST_MESSAGE:
-                String message = args.getString(0);
-                if(message != null){
-                    String js = String.format("javascript:(WebViewBridge.onMessage(%s));", message);
-                    root.loadUrl(js);
+                try {
+                    JSONObject eventInitDict = new JSONObject();
+                    eventInitDict.put("data", args.getString(0));
+                    root.loadUrl("javascript:(document.dispatchEvent(new MessageEvent('message', " + eventInitDict.toString() + ")))");
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
                 }
                 break;
         }
@@ -526,17 +522,5 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
         EventDispatcher eventDispatcher =
                 reactContext.getNativeModule(UIManagerModule.class).getEventDispatcher();
         eventDispatcher.dispatchEvent(event);
-    }
-
-
-
-    @ReactProp(name = "allowFileAccessFromFileURLs")
-    public void setAllowFileAccessFromFileURLs(WebView root, boolean allows) {
-        root.getSettings().setAllowFileAccessFromFileURLs(allows);
-    }
-
-    @ReactProp(name = "allowUniversalAccessFromFileURLs")
-    public void setAllowUniversalAccessFromFileURLs(WebView root, boolean allows) {
-        root.getSettings().setAllowUniversalAccessFromFileURLs(allows);
     }
 }

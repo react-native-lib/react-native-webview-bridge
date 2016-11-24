@@ -130,15 +130,19 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            if (url.startsWith("http://") || url.startsWith("https://") ||
-                    url.startsWith("file://")) {
-                return false;
-            } else {
-//                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-//                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                view.getContext().startActivity(intent);
-                return true;
-            }
+            dispatchEvent(view, new TopMessageEvent(view.getId(), "onShouldStartLoadWithRequest::" + url));
+            return true;
+
+//            if (url.startsWith("http://") || url.startsWith("https://") ||
+//                    url.startsWith("file://")) {
+//                return false;
+//            } else {
+////                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+////                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+////                view.getContext().startActivity(intent);
+//                dispatchEvent(view, new TopMessageEvent(view.getId(), "onShouldStartLoadWithRequest::" + url));
+//                return true;
+//            }
         }
 
         @Override
@@ -490,7 +494,7 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
             case COMMAND_POST_MESSAGE:
                 String message = args.getString(0);
                 if(message != null){
-                    String js = String.format("javascript:(WebViewBridge.onMessage(%s));", message);
+                    String js = String.format("javascript:(WebViewBridge.onMessage&&WebViewBridge.onMessage('%s'));", message);
                     root.loadUrl(js);
                 }
                 break;

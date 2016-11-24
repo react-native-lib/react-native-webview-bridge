@@ -151,6 +151,8 @@ class WebViewBridge extends React.Component {
 
         allowFileAccessFromFileURLs: PropTypes.bool,
         allowUniversalAccessFromFileURLs: PropTypes.bool,
+
+        onShouldStartLoadWithRequest: PropTypes.func,
     };
 
     static defaultProps = {
@@ -205,6 +207,12 @@ class WebViewBridge extends React.Component {
             console.warn('WebView: `source.body` is not supported when using GET.');
         }
 
+        var onShouldStartLoadWithRequest = this.props.onShouldStartLoadWithRequest && ((event: Event) => {
+                var shouldStart = this.props.onShouldStartLoadWithRequest &&
+                    this.props.onShouldStartLoadWithRequest(event.nativeEvent);
+                // RCTWebViewBridgeManager.startLoadWithResult(!!shouldStart, event.nativeEvent.lockIdentifier);
+            });
+
         var webView =
             <RCTWebViewBridge
                 ref={RCT_WEBVIEW_REF}
@@ -229,6 +237,8 @@ class WebViewBridge extends React.Component {
 
                 allowFileAccessFromFileURLs={this.props.allowFileAccessFromFileURLs}
                 allowUniversalAccessFromFileURLs={this.props.allowUniversalAccessFromFileURLs}
+
+                onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
             />;
 
         return (
@@ -331,9 +341,18 @@ class WebViewBridge extends React.Component {
     };
 
     onMessage = (event: Event) => {
+        const message = event.nativeEvent.data;
+        if(message.startsWith("onShouldStartLoadWithRequest::")){
+            let msg = message.replace(/onShouldStartLoadWithRequest::/g, "")
+            let event = {
+                url:msg
+            }
+            this.props.onShouldStartLoadWithRequest && this.props.onShouldStartLoadWithRequest(event);
+            return;
+        }
+        // special for
         const onBridgeMessageCallback = this.props.onBridgeMessage;
         if (onBridgeMessageCallback) {
-            const message = event.nativeEvent.data;
             onBridgeMessageCallback(message);
         }
     }

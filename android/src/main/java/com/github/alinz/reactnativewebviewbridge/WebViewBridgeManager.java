@@ -16,6 +16,7 @@ import android.text.TextUtils;
 import android.view.ViewGroup.LayoutParams;
 import android.webkit.GeolocationPermissions;
 import android.webkit.JavascriptInterface;
+import android.webkit.JsResult;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebView;
@@ -338,6 +339,12 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
             @Override
             public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
                 callback.invoke(origin, true, false);
+            }
+
+            @Override
+            public boolean onJsAlert(WebView view, String url, String message, JsResult result) {
+                dispatchEvent(view, new TopMessageEvent(view.getId(), "alert::" + message));
+                return true;
             }
         });
         reactContext.addLifecycleEventListener(webView);

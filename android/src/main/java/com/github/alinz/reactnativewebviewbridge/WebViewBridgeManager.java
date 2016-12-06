@@ -276,47 +276,12 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
         }
 
         public void callInjectedJavaScript() {
-            String defaultJs = "\n" +
-                    "window._top = {};\n" +
-                    "if(_top){\n" +
-                    "    _top.Dialog = function (params) {\n" +
-                    "        var autoHide = params.autoHide;\n" +
-                    "        var model = params.model;\n" +
-                    "        var message = params.msg;\n" +
-                    "        var buttons = params.buttons;\n" +
-                    "        var keys = Object.keys(buttons);\n" +
-                    "        if(model){\n" +
-                    "            if(!confirm(message)){\n" +
-                    "                buttons[keys[0]].call();\n" +
-                    "            }else{\n" +
-                    "                if(keys.length > 1){\n" +
-                    "                    buttons[keys[1]].call();\n" +
-                    "                }else{\n" +
-                    "                    buttons[keys[0]].call();\n" +
-                    "                }\n" +
-                    "            }\n" +
-                    "        }else{\n" +
-                    "            WebViewBridge.send('alert::' + message);\n" +
-                    "        }\n" +
-                    "    }\n" +
-                    "}\n" +
-                    "\n" +
-                    "var alertBack = window.alert;\n" +
-                    "window.alert = function (message, isCheck) {\n" +
-                    "    if(!!isCheck){\n" +
-                    "        alertBack(message);\n" +
-                    "    }else{\n" +
-                    "        WebViewBridge.send('alert::' + message);\n" +
-                    "    }\n" +
-                    "}";
-            loadUrl("javascript:(function() {\n" + defaultJs + ";\n})();");
-
             if (getSettings().getJavaScriptEnabled() &&
                     injectedJS != null &&
                     !TextUtils.isEmpty(injectedJS)) {
 
                 String js = injectedJS.replace("\r", "");
-                js = injectedJS.replace("\n", "");
+                js = js.replace("\n", "");
                 loadUrl("javascript:(function() {\n" + js + ";\n})();");
             }
         }

@@ -407,41 +407,6 @@ RCT_NOT_IMPLEMENTED(- (instancetype)initWithCoder:(NSCoder *)aDecoder)
       customEvent.initEvent('WebViewBridge', true, true);
       doc.dispatchEvent(customEvent);
       
-      //window.alert = function(message) { WebViewBridge.send('alert::' + message); };
-      
-      window._top = {};
-      if(_top){
-          _top.Dialog = function (params) {
-              var autoHide = params.autoHide;
-              var model = params.model;
-              var message = params.msg;
-              var buttons = params.buttons;
-              var keys = Object.keys(buttons);
-              if(model){
-                  if(!confirm(message)){
-                      buttons[keys[0]].call();
-                  }else{
-                      if(keys.length > 1){
-                          buttons[keys[1]].call();
-                      }else{
-                          buttons[keys[0]].call();
-                      }
-                  }
-              }else{
-                  WebViewBridge.send('alert::' + message);
-              }
-          }
-      }
-      
-      var alertBack = window.alert;
-      window.alert = function (message, isCheck) {
-          if(!!isCheck){
-              alertBack(message);
-          }else{
-              WebViewBridge.send('alert::' + message);
-          }
-      }
-      
     }(window));
   );
 }

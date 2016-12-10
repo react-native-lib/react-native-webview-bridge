@@ -9,9 +9,12 @@
 
 package com.github.alinz.reactnativewebviewbridge;
 
+import android.app.Activity;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Picture;
+import android.net.Uri;
 import android.os.Build;
 import android.support.v7.app.AlertDialog;
 import android.text.TextUtils;
@@ -27,8 +30,10 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import com.facebook.common.logging.FLog;
+import com.facebook.react.bridge.ActivityEventListener;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.LifecycleEventListener;
+import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
@@ -50,9 +55,6 @@ import com.facebook.react.views.webview.events.TopLoadingErrorEvent;
 import com.facebook.react.views.webview.events.TopLoadingFinishEvent;
 import com.facebook.react.views.webview.events.TopLoadingStartEvent;
 import com.facebook.react.views.webview.events.TopMessageEvent;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -104,6 +106,12 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
 
     private WebViewConfig mWebViewConfig;
     private @Nullable WebView.PictureListener mPictureListener;
+
+    private ValueCallback<Uri> mUploadMessage;
+    private ValueCallback<Uri[]> mUploadMessages;
+
+    private ReactApplicationContext mReactApplicationContext;
+    private final static int FILECHOOSER_RESULTCODE = 1001;
 
     private static class ReactWebViewClient extends WebViewClient {
 
@@ -204,6 +212,18 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
             return event;
         }
     }
+
+//    @Override
+//    protected void onActivityResult(int requestCode, int resultCode,
+//                                    Intent intent) {
+//        if (requestCode == FILECHOOSER_RESULTCODE) {
+//            if (null == mUploadMessage) return;
+//            Uri result = intent == null || resultCode != RESULT_OK ? null
+//                    : intent.getData();
+//            mUploadMessage.onReceiveValue(result);
+//            mUploadMessage = null;
+//        }
+//    }
 
     /**
      * Subclass of {@link WebView} that implements {@link LifecycleEventListener} interface in order
@@ -320,11 +340,39 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
         }
     }
 
-    public WebViewBridgeManager() {
+    public WebViewBridgeManager(ReactApplicationContext reactApplicationContext) {
+        mReactApplicationContext = reactApplicationContext;
         mWebViewConfig = new WebViewConfig() {
             public void configWebView(WebView webView) {
             }
         };
+
+        mReactApplicationContext.addActivityEventListener(new ActivityEventListener() {
+            @Override
+            public void onActivityResult(Activity activity, int requestCode, int resultCode, Intent intent) {
+                if (requestCode == FILECHOOSER_RESULTCODE) {
+                    if (null != mUploadMessage) {
+                        Uri result = intent == null || resultCode != Activity.RESULT_OK ? null : intent.getData();
+                        mUploadMessage.onReceiveValue(result);
+                        mUploadMessage = null;
+                    }
+                    if (null != mUploadMessages) {
+                        Uri result = intent == null || resultCode != Activity.RESULT_OK ? null : intent.getData();
+                        if(result != null){
+                            mUploadMessages.onReceiveValue(new Uri[]{result});
+                        }else{
+                            mUploadMessages.onReceiveValue(null);
+                        }
+                        mUploadMessages = null;
+                    }
+                }
+            }
+
+            @Override
+            public void onNewIntent(Intent intent) {
+
+            }
+        });
     }
 
     public WebViewBridgeManager(WebViewConfig webViewConfig) {
@@ -335,6 +383,7 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
     public String getName() {
         return REACT_CLASS;
     }
+
 
     @Override
     protected WebView createViewInstance(ThemedReactContext reactContext) {
@@ -417,6 +466,49 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
                 return true;
             }
 
+            //关键代码，以下函数是没有API文档的，所以在Eclipse中会报错，如果添加了@Override关键字在这里的话。
+            // For Android 3.0+
+            public void openFileChooser(ValueCallback<Uri> uploadMsg) {
+
+                mUploadMessage = uploadMsg;
+                Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+                i.addCategory(Intent.CATEGORY_OPENABLE);
+                i.setType("*/*");
+                WebViewBridgeManager.this.mReactApplicationContext.startActivityForResult(Intent.createChooser(i, "文件选择"), FILECHOOSER_RESULTCODE, null);
+            }
+
+            // For Android 3.0+
+            public void openFileChooser(ValueCallback uploadMsg, String acceptType) {
+                mUploadMessage = uploadMsg;
+                Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+                i.addCategory(Intent.CATEGORY_OPENABLE);
+                i.setType("*/*");
+                WebViewBridgeManager.this.mReactApplicationContext.startActivityForResult(Intent.createChooser(i, "文件选择"), FILECHOOSER_RESULTCODE, null);
+            }
+
+            //For Android 4.1
+            public void openFileChooser(ValueCallback<Uri> uploadMsg, String acceptType, String capture) {
+                mUploadMessage = uploadMsg;
+                Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+                i.addCategory(Intent.CATEGORY_OPENABLE);
+                i.setType("*/*");
+                WebViewBridgeManager.this.mReactApplicationContext.startActivityForResult(Intent.createChooser(i, "文件选择"), FILECHOOSER_RESULTCODE, null);
+            }
+
+            //For Android 5
+            @Override
+            public boolean onShowFileChooser(WebView webView,
+                                             ValueCallback<Uri[]> filePathCallback,
+                                             FileChooserParams fileChooserParams) {
+                if (mUploadMessage != null)
+                    return false;
+                mUploadMessages = filePathCallback;
+                Intent i = new Intent(Intent.ACTION_GET_CONTENT);
+                i.addCategory(Intent.CATEGORY_OPENABLE);
+                i.setType("image/*");
+                WebViewBridgeManager.this.mReactApplicationContext.startActivityForResult(Intent.createChooser(i, "File Chooser"), FILECHOOSER_RESULTCODE, null);
+                return true;
+            }
 
         });
         reactContext.addLifecycleEventListener(webView);

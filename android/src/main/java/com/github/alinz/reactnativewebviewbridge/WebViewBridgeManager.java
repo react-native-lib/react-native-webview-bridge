@@ -419,6 +419,8 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
                 builder.setCancelable(false);
                 AlertDialog dialog = builder.create();
                 dialog.show();
+                dialog.setCancelable(false);
+                dialog.setCanceledOnTouchOutside(false);
                 result.confirm();// 因为没有绑定事件，需要强行confirm,否则页面会变黑显示不了内容。
                 return true;
             }
@@ -467,9 +469,11 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
                     }
                 });
                 // 禁止响应按back键的事件
-                // builder.setCancelable(false);
+                builder.setCancelable(false);
                 AlertDialog dialog = builder.create();
                 dialog.show();
+                dialog.setCancelable(false);
+                dialog.setCanceledOnTouchOutside(false);
                 return true;
             }
 

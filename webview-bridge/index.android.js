@@ -152,12 +152,15 @@ class WebViewBridge extends React.Component {
         allowFileAccessFromFileURLs: PropTypes.bool,
         allowUniversalAccessFromFileURLs: PropTypes.bool,
 
+        shouldOverrideUrlLoadingVal: PropTypes.bool,
+
         onShouldStartLoadWithRequest: PropTypes.func,
     };
 
     static defaultProps = {
         javaScriptEnabled : true,
         scalesPageToFit: true,
+        shouldOverrideUrlLoadingVal: true,
     };
 
     state = {
@@ -239,6 +242,8 @@ class WebViewBridge extends React.Component {
                 allowUniversalAccessFromFileURLs={this.props.allowUniversalAccessFromFileURLs}
 
                 onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
+
+                shouldOverrideUrlLoadingVal={this.props.shouldOverrideUrlLoadingVal}
             />;
 
         return (
@@ -361,6 +366,7 @@ class WebViewBridge extends React.Component {
 var RCTWebViewBridge = requireNativeComponent('RCTWebViewBridge', WebViewBridge, {
     nativeOnly: {
         messagingEnabled: PropTypes.bool,
+        shouldOverrideUrlLoadingVal: PropTypes.bool,
     },
 });
 

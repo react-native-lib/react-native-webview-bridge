@@ -113,6 +113,7 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
     private ValueCallback<Uri[]> mUploadMessages;
 
     private ReactApplicationContext mReactApplicationContext;
+
     private final static int FILECHOOSER_RESULTCODE = 1001;
 
     private static class ReactWebViewClient extends WebViewClient {
@@ -150,8 +151,17 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
 
         @Override
         public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            dispatchEvent(view, new TopMessageEvent(view.getId(), "onShouldStartLoadWithRequest::" + url));
-            return true;
+            boolean shouldOverrideUrlLoadingVal = ((ReactWebView) view).getShouldOverrideUrlLoadingVal();
+            if(shouldOverrideUrlLoadingVal){
+                dispatchEvent(view, new TopMessageEvent(view.getId(), "onShouldStartLoadWithRequest::" + url));
+                return true;
+            }else{
+                if (url.startsWith("http://") || url.startsWith("https://") || url.startsWith("file://")) {
+                    return false;
+                }else{
+                    return true;
+                }
+            }
 
 //            if (url.startsWith("http://") || url.startsWith("https://") ||
 //                    url.startsWith("file://")) {
@@ -239,6 +249,7 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
     private static class ReactWebView extends WebView implements LifecycleEventListener {
         private @Nullable String injectedJS;
         private boolean messagingEnabled = false;
+        private boolean shouldOverrideUrlLoadingVal = true;
 
         private class ReactWebViewBridge {
             ReactWebView mContext;
@@ -300,6 +311,14 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
             } else {
                 removeJavascriptInterface(BRIDGE_NAME);
             }
+        }
+
+        public void setShouldOverrideUrlLoadingVal(boolean enabled){
+            shouldOverrideUrlLoadingVal = enabled;
+        }
+
+        public boolean getShouldOverrideUrlLoadingVal(){
+            return shouldOverrideUrlLoadingVal;
         }
 
         public void callInjectedJavaScript() {
@@ -640,6 +659,11 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
         } else {
             view.setPictureListener(null);
         }
+    }
+
+    @ReactProp(name = "shouldOverrideUrlLoadingVal")
+    public void setShouldOverrideUrlLoadingVal(WebView view, boolean enabled) {
+        ((ReactWebView) view).setShouldOverrideUrlLoadingVal(enabled);
     }
 
     @Override

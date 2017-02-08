@@ -1,4 +1,5 @@
 
+*.iml
 .npmignore
 android/build/
 android/react-native-webview-bridge.iml

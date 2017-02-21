@@ -666,6 +666,13 @@ public class WebViewBridgeManager extends SimpleViewManager<WebView> {
         ((ReactWebView) view).setShouldOverrideUrlLoadingVal(enabled);
     }
 
+
+    @ReactProp(name = "scrollEnabled")
+    public void setScrollEnabled(WebView view, boolean enabled) {
+        view.setHorizontalScrollBarEnabled(false);
+        view.setVerticalFadingEdgeEnabled(enabled);
+    }
+
     @Override
     protected void addEventEmitters(ThemedReactContext reactContext, WebView view) {
         // Do not register default touch emitter and let WebView implementation handle touches

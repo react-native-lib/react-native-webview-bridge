@@ -153,6 +153,7 @@ class WebViewBridge extends React.Component {
         allowUniversalAccessFromFileURLs: PropTypes.bool,
 
         shouldOverrideUrlLoadingVal: PropTypes.bool,
+        scrollEnabled: PropTypes.bool,
 
         onShouldStartLoadWithRequest: PropTypes.func,
     };
@@ -161,6 +162,7 @@ class WebViewBridge extends React.Component {
         javaScriptEnabled : true,
         scalesPageToFit: true,
         shouldOverrideUrlLoadingVal: true,
+        scrollEnabled: true,
     };
 
     state = {
@@ -244,6 +246,8 @@ class WebViewBridge extends React.Component {
                 onShouldStartLoadWithRequest={onShouldStartLoadWithRequest}
 
                 shouldOverrideUrlLoadingVal={this.props.shouldOverrideUrlLoadingVal}
+
+                scrollEnabled={this.props.scrollEnabled}
             />;
 
         return (
@@ -367,6 +371,7 @@ var RCTWebViewBridge = requireNativeComponent('RCTWebViewBridge', WebViewBridge,
     nativeOnly: {
         messagingEnabled: PropTypes.bool,
         shouldOverrideUrlLoadingVal: PropTypes.bool,
+        scrollEnabled:PropTypes.bool,
     },
 });
 
